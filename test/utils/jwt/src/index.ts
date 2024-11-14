@@ -11,6 +11,8 @@ import * as Proposals from "./proposals";
 const proposalsPath = `${process.env.KMS_WORKSPACE}/proposals`;
 const privateKeyPath = `${process.env.KMS_WORKSPACE}/private.pem`;
 const certificatePath = `${process.env.KMS_WORKSPACE}/cert.pem`;
+const testDataPath = `${process.cwd()}/../../data-samples`;
+
 const kid = "Demo IDP kid";
 const hostPort = 3000;
 const host = `http://localhost:${hostPort}`;
@@ -53,14 +55,22 @@ const createProposalsFolder = async (): Promise<void> => {
 const app = express();
 let privateKey = fs.readFileSync(privateKeyPath);
 const token = (req: Request, res: Response) => {
-  const payload = {
+  const payload: any = {
     iss,
     sub,
     name,
     nbf: Math.floor(Date.now() / 1000),
     iat: Math.floor(Date.now() / 1000),
-    exp: Math.floor(Date.now() / 1000) + 60 * 60, // expires in 1 hour
+    exp: Math.floor(Date.now() / 1000) + 60 * 60, // expires in 1 hour    
   };
+
+  payload["x-ms-ver"] = "1.0";
+  payload["x-ms-azurevm-debuggersdisabled"] = true;
+  payload["x-ms-azurevm-osversion-major"] = 23;
+//  payload["x-ms-runtime"]["keys"] = [Keys.getPublicJwk(testDataPath + "/publicWrapKey.pem", "TpmEphemeralEncryptionKey")];
+  payload["x-ms-runtime"] = {
+    keys: [Keys.getPublicJwk(testDataPath + "/publicWrapKey.pem", "TpmEphemeralEncryptionKey")]
+  }
 
   const access_token = jwt.sign(payload, privateKey, {
     algorithm: "RS256",

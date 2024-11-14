@@ -40,6 +40,18 @@ export const generate = async (
   console.log(`Private key saved: ${privateKeyPath}`);
 };
 
+
+export const getPublicJwk = (
+  publicKeyPathpath: string,
+  kid: string,
+): JWK<Extras> => {
+  const publicKey = fs.readFileSync(publicKeyPathpath, "utf8");
+  console.log(`Get publicKey: ${publicKey}`);
+  const jwk = pem2jwk(publicKey);
+  (<any>jwk).kid = kid;
+  return jwk;
+};
+
 export const getJwks = (
   privateKeyPathpath: string,
   certPath: string,
